@@ -22,7 +22,7 @@ html, body {
 #bgmToggle {
   position: fixed;
   top: 82px;
-  right: 16px;
+  right: 108px;
   z-index: 300;
   width: 44px;
   height: 44px;
@@ -42,6 +42,27 @@ html, body {
 #bgmToggle:hover  { background: rgba(255,255,255,0.2); }
 #bgmToggle:active { transform: scale(0.9); }
 #bgmToggle.off    { opacity: 0.45; }
+
+#btnEnd {
+  position: fixed;
+  top: 82px;
+  right: 16px;
+  z-index: 300;
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+#btnEnd:hover  { background: rgba(255,80,80,0.4); color: #fff; }
+#btnEnd:active { transform: scale(0.93); }
+#btnEnd.hidden { display: none; }
 
 /* ── 오버레이 화면 공통 ── */
 .screen {
@@ -163,5 +184,70 @@ html, body {
 .stat-label {
   font-size: 13px;
   color: rgba(255,255,255,0.5);
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+
+/* 결과 카드 스크롤 가능하게 */
+.result-card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* 랭킹 박스 */
+.ranking-box {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 20px;
+}
+.ranking-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 12px;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+.ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ranking-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+.rank-num {
+  width: 24px;
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+  color: rgba(255,255,255,0.4);
+}
+.rank-num.gold   { color: #ffd700; }
+.rank-num.silver { color: #c0c0c0; }
+.rank-num.bronze { color: #cd7f32; }
+.rank-score {
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  min-width: 60px;
+}
+.rank-score.new-record { color: #ff6b6b; text-shadow: 0 0 10px #ff6b6b; }
+.rank-meta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+.rank-empty {
+  text-align: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 13px;
+  padding: 8px 0;
   font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
 }

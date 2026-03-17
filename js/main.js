@@ -292,13 +292,42 @@ gameManager.onPlay(() => {
   scorePopups.length = 0;
   timeTotal = gameManager.selectedTime;
   timeLeft  = timeTotal || null;
+  btnEnd.classList.remove('hidden');
   // 풍선은 카운트다운 중에 이미 올라오고 있으므로 재초기화 안 함
 });
 
 gameManager.onResult(() => {
-  document.getElementById('r-score').textContent = scoreManager.score;
-  document.getElementById('r-combo').textContent = scoreManager.maxCombo;
-  document.getElementById('r-acc').textContent   = scoreManager.accuracy + '%';
+  const score    = scoreManager.score;
+  const maxCombo = scoreManager.maxCombo;
+  const accuracy = scoreManager.accuracy;
+  const timeMode = gameManager.selectedTime === 0 ? '∞'
+                 : gameManager.selectedTime + '초';
+
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('r-combo').textContent = maxCombo;
+  document.getElementById('r-acc').textContent   = accuracy + '%';
+
+  // 랭킹 저장
+  rankingManager.save(score, maxCombo, accuracy, timeMode);
+
+  // 랭킹 렌더링
+  const top  = rankingManager.getTop(5);
+  const list = document.getElementById('ranking-list');
+  if (top.length === 0) {
+    list.innerHTML = '<div class="rank-empty">아직 기록이 없어요!</div>';
+  } else {
+    const medals = ['gold', 'silver', 'bronze'];
+    list.innerHTML = top.map((r, i) => {
+      const isNew = i === 0 && r.score === score;
+      return `<li>
+        <span class="rank-num ${medals[i] || ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</span>
+        <span class="rank-score ${isNew ? 'new-record' : ''}">${r.score.toLocaleString()}점</span>
+        <span class="rank-meta">${r.timeMode} · ${r.date}</span>
+      </li>`;
+    }).join('');
+  }
+
+  btnEnd.classList.add('hidden');
   document.getElementById('screen-result').classList.remove('hidden');
 });
 
@@ -323,6 +352,10 @@ document.getElementById('btn-restart').addEventListener('click', () => {
   gameManager.restart();
   document.getElementById('screen-ready').classList.remove('hidden');
 });
+
+// ── 끝내기 버튼 ───────────────────────────────────────────
+const btnEnd = document.getElementById('btnEnd');
+btnEnd.addEventListener('click', () => gameManager.endGame());
 
 // ── BGM 토글 버튼 ─────────────────────────────────────────
 const bgmBtn = document.getElementById('bgmToggle');
