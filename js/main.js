@@ -278,6 +278,7 @@ function onTap(x, y) {
       b.alive = false;
       const result = scoreManager.pop(x, y, performance.now());
       addScorePopup(x, y - b.ry - 10, `+${result.gained}`);
+      particles.burst(x, y, b.color);
       sound.pop(result.combo);
       if (result.combo >= 3) sound.combo(result.combo);
       respawnBalloon(b);
@@ -307,8 +308,11 @@ gameManager.onResult(() => {
   document.getElementById('r-combo').textContent = maxCombo;
   document.getElementById('r-acc').textContent   = accuracy + '%';
 
+  // 플레이어 표시
+  document.getElementById('result-player').textContent = `${playerAvatar} ${playerName}`;
+
   // 랭킹 저장
-  rankingManager.save(score, maxCombo, accuracy, timeMode);
+  rankingManager.save(score, maxCombo, accuracy, timeMode, playerName, playerAvatar);
 
   // 랭킹 렌더링
   const top  = rankingManager.getTop(5);
@@ -318,17 +322,31 @@ gameManager.onResult(() => {
   } else {
     const medals = ['gold', 'silver', 'bronze'];
     list.innerHTML = top.map((r, i) => {
-      const isNew = i === 0 && r.score === score;
+      const isNew = i === 0 && r.score === score && r.name === playerName;
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
       return `<li>
-        <span class="rank-num ${medals[i] || ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</span>
+        <span class="rank-num ${medals[i] || ''}">${medal}</span>
+        <span style="font-size:28px">${r.avatar || '🎈'}</span>
         <span class="rank-score ${isNew ? 'new-record' : ''}">${r.score.toLocaleString()}점</span>
-        <span class="rank-meta">${r.timeMode} · ${r.date}</span>
+        <span class="rank-meta">${r.name || '익명'} · ${r.timeMode} · ${r.date}</span>
       </li>`;
     }).join('');
   }
 
   btnEnd.classList.add('hidden');
   document.getElementById('screen-result').classList.remove('hidden');
+});
+
+// ── 플레이어 정보 ─────────────────────────────────────────
+let playerName   = '';
+let playerAvatar = '🐶';
+
+document.getElementById('avatarBtns').addEventListener('click', e => {
+  const btn = e.target.closest('.avatar-btn');
+  if (!btn) return;
+  document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  playerAvatar = btn.dataset.avatar;
 });
 
 // ── 시작/결과 화면 버튼 ───────────────────────────────────
@@ -342,8 +360,9 @@ document.querySelectorAll('.time-btn').forEach(btn => {
 
 document.getElementById('btn-start').addEventListener('click', () => {
   sound.init();
+  playerName = document.getElementById('playerName').value.trim() || '익명';
   document.getElementById('screen-ready').classList.add('hidden');
-  initBalloons(); // 카운트다운 시작 시 풍선 초기화 (아래서부터 올라오게)
+  initBalloons();
   gameManager.startCountdown();
 });
 
@@ -405,6 +424,8 @@ function loop(timestamp) {
     });
 
     if (gameManager.isPlaying) {
+      particles.update(dt);
+      particles.draw(ctx);
       updateScorePopups(dt);
       drawScorePopups();
       scoreManager.updateComboText(dt);

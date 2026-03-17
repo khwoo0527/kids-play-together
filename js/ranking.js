@@ -9,13 +9,15 @@ const rankingManager = {
     } catch { return []; }
   },
 
-  save(score, maxCombo, accuracy, timeMode) {
+  save(score, maxCombo, accuracy, timeMode, name = '익명', avatar = '🎈') {
     const list = this.load();
     list.push({
       score,
       maxCombo,
       accuracy,
-      timeMode, // '30초' | '60초' | '∞'
+      timeMode,
+      name,
+      avatar,
       date: new Date().toLocaleDateString('ko-KR'),
     });
     list.sort((a, b) => b.score - a.score);

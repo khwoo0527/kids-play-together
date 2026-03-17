@@ -15,14 +15,37 @@
   <div id="screen-ready" class="screen">
     <div class="screen-card">
       <div class="game-title">🎈 풍선 터트리기</div>
-      <div class="time-select">
-        <p class="time-label">시간 선택</p>
-        <div class="time-btns">
-          <button class="time-btn" data-time="30">30초</button>
-          <button class="time-btn active" data-time="60">60초</button>
-          <button class="time-btn" data-time="0">∞</button>
+
+      <!-- 이름 입력 -->
+      <div class="input-group">
+        <p class="time-label">이름 입력</p>
+        <input id="playerName" class="name-input" type="text" maxlength="8" placeholder="이름을 입력하세요" />
+      </div>
+
+      <!-- 아바타 선택 -->
+      <div class="input-group">
+        <p class="time-label">캐릭터 선택</p>
+        <div class="avatar-btns" id="avatarBtns">
+          <button class="avatar-btn active" data-avatar="🐶">🐶</button>
+          <button class="avatar-btn" data-avatar="🐱">🐱</button>
+          <button class="avatar-btn" data-avatar="🐸">🐸</button>
+          <button class="avatar-btn" data-avatar="🦊">🦊</button>
+          <button class="avatar-btn" data-avatar="🐼">🐼</button>
+          <button class="avatar-btn" data-avatar="🦄">🦄</button>
         </div>
       </div>
+
+      <!-- 시간 선택 -->
+      <div class="input-group">
+        <p class="time-label">시간 선택</p>
+        <div class="time-btns">
+          <button class="time-btn" data-time="15">15초</button>
+          <button class="time-btn" data-time="30">30초</button>
+          <button class="time-btn" data-time="45">45초</button>
+          <button class="time-btn active" data-time="60">60초</button>
+        </div>
+      </div>
+
       <button id="btn-start" class="btn-main">시작! 🎈</button>
     </div>
   </div>
@@ -31,6 +54,7 @@
   <div id="screen-result" class="screen hidden">
     <div class="screen-card result-card">
       <div class="result-emoji">🎉</div>
+      <div id="result-player" class="result-player"></div>
       <div class="result-title">게임 종료!</div>
       <div class="result-stats">
         <div class="stat">
@@ -64,6 +88,7 @@
   <script src="js/input.js"></script>
   <script src="js/score.js"></script>
   <script src="js/hud.js"></script>
+  <script src="js/particles.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/main.js"></script>
 </body>

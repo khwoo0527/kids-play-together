@@ -27,7 +27,7 @@ const CONFIG = {
   PROB_BONUS: 0.06,
 
   // UI
-  HUD_HEIGHT: 70,
+  HUD_HEIGHT: 110,
   FONT_FAMILY: '"Segoe UI", "Apple SD Gothic Neo", sans-serif',
   AVATARS: ['🐶','🐱','🐸','🦊','🐼','🦄'],
 };
