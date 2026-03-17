@@ -292,7 +292,7 @@ gameManager.onPlay(() => {
   scorePopups.length = 0;
   timeTotal = gameManager.selectedTime;
   timeLeft  = timeTotal || null;
-  initBalloons();
+  // 풍선은 카운트다운 중에 이미 올라오고 있으므로 재초기화 안 함
 });
 
 gameManager.onResult(() => {
@@ -314,6 +314,7 @@ document.querySelectorAll('.time-btn').forEach(btn => {
 document.getElementById('btn-start').addEventListener('click', () => {
   sound.init();
   document.getElementById('screen-ready').classList.add('hidden');
+  initBalloons(); // 카운트다운 시작 시 풍선 초기화 (아래서부터 올라오게)
   gameManager.startCountdown();
 });
 
@@ -360,6 +361,8 @@ function loop(timestamp) {
       if (gameManager.isPlaying) {
         if (b.isPastHalf(H, CONFIG.HUD_HEIGHT)) { scoreManager.miss(); respawnBalloon(b); return; }
         if (b.isOutOfScreen()) { respawnBalloon(b); return; }
+      } else if (gameManager.isCd) {
+        if (b.isOutOfScreen()) respawnBalloon(b); // 카운트다운 중 화면 밖 나가면 재스폰
       }
     });
 
