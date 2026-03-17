@@ -1,76 +1,205 @@
 // ── Canvas 초기화 ─────────────────────────────────────────
 const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
-
 let W, H, DPR;
 
 function resizeCanvas() {
   DPR = window.devicePixelRatio || 1;
   W   = window.innerWidth;
   H   = window.innerHeight;
-
-  // 실제 픽셀 해상도 (선명하게)
   canvas.width  = W * DPR;
   canvas.height = H * DPR;
-
-  // CSS 크기는 윈도우와 동일
   canvas.style.width  = W + 'px';
   canvas.style.height = H + 'px';
-
-  // DPR 보정: 이후 draw 좌표는 논리 픽셀 기준
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 
 window.addEventListener('resize', () => {
   resizeCanvas();
-  // 풍선 위치 재계산
-  balloons.forEach(b => {
-    b.canvasWidth  = W;
-    b.canvasHeight = H;
-  });
+  initStars();
+  balloons.forEach(b => { b.canvasWidth = W; b.canvasHeight = H; });
 });
 
-// ── 배경 그리기 ───────────────────────────────────────────
-function drawBackground() {
-  const grd = ctx.createLinearGradient(0, 0, 0, H);
-  grd.addColorStop(0, '#0a0a1a');
-  grd.addColorStop(1, '#1a1a3e');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, W, H);
+// ── 절반선 Y ──────────────────────────────────────────────
+function getHalfY() {
+  return CONFIG.HUD_HEIGHT + (H - CONFIG.HUD_HEIGHT) / 2;
+}
 
-  // 별
-  for (let i = 0; i < 60; i++) {
-    const sx = (i * 137 + 20) % W;
-    const sy = (i * 97) % (H * 0.45);
-    const sr = 0.5 + (i % 3) * 0.5;
-    ctx.beginPath();
-    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.4 * (i % 2)})`;
-    ctx.fill();
+// ── 5각별 path ────────────────────────────────────────────
+function drawStarPath(cx, cy, R, r, angle) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = angle + (i * Math.PI / 5);
+    const d = i % 2 === 0 ? R : r;
+    i === 0 ? ctx.moveTo(cx + d*Math.cos(a), cy + d*Math.sin(a))
+            : ctx.lineTo(cx + d*Math.cos(a), cy + d*Math.sin(a));
+  }
+  ctx.closePath();
+}
+
+// ── 별 데이터 ─────────────────────────────────────────────
+const STARS = [];
+
+function initStars() {
+  STARS.length = 0;
+
+  function noOverlap(nx, ny, nr) {
+    return STARS.every(s => {
+      const dx = (nx - s.x) * W;
+      const dy = (ny - s.y) * H;
+      return Math.sqrt(dx*dx + dy*dy) > (nr + s.r) * 2.8;
+    });
+  }
+  function place(r, tries = 80) {
+    for (let t = 0; t < tries; t++) {
+      const nx = 0.02 + Math.random() * 0.96;
+      const ny = 0.01 + Math.random() * 0.46;
+      if (noOverlap(nx, ny, r)) return { x: nx, y: ny };
+    }
+    return null;
+  }
+
+  const COLORS = [
+    { fill:'#ffffff', glow:'#aaddff' },
+    { fill:'#ffe566', glow:'#ffaa00' },
+    { fill:'#ff9de2', glow:'#ff44bb' },
+    { fill:'#80d4ff', glow:'#00aaff' },
+    { fill:'#aaffaa', glow:'#44cc44' },
+    { fill:'#ffb347', glow:'#ff6600' },
+    { fill:'#cc99ff', glow:'#8844ff' },
+    { fill:'#ff8888', glow:'#ff2222' },
+    { fill:'#66ffee', glow:'#00ccaa' },
+  ];
+  let ci = 0;
+
+  // 큰 별 12개
+  for (let i = 0; i < 12; i++) {
+    const r = 10 + Math.random() * 7;
+    const pos = place(r);
+    if (!pos) continue;
+    const c = COLORS[ci++ % COLORS.length];
+    STARS.push({ x:pos.x, y:pos.y, r, fill:c.fill, glow:c.glow,
+      twinkleSpeed: 1.0 + Math.random() * 1.5,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.5,
+      rot: Math.random() * Math.PI * 2,
+    });
+  }
+
+  // 중간 별 28개
+  for (let i = 0; i < 28; i++) {
+    const r = 4 + Math.random() * 5;
+    const pos = place(r, 50);
+    if (!pos) continue;
+    const c = COLORS[ci++ % COLORS.length];
+    STARS.push({ x:pos.x, y:pos.y, r, fill:c.fill, glow:c.glow,
+      twinkleSpeed: 1.5 + Math.random() * 2.5,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 1.0,
+      rot: Math.random() * Math.PI * 2,
+    });
+  }
+
+  // 작은 별 35개
+  for (let i = 0; i < 35; i++) {
+    const r = 1.8 + Math.random() * 2.5;
+    const pos = place(r, 30);
+    if (!pos) continue;
+    const c = COLORS[ci++ % COLORS.length];
+    STARS.push({ x:pos.x, y:pos.y, r, fill:c.fill, glow:c.glow,
+      twinkleSpeed: 2.5 + Math.random() * 3.5,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 2.0,
+      rot: Math.random() * Math.PI * 2,
+    });
   }
 }
 
-// ── 풍선 생성 ─────────────────────────────────────────────
+// ── 배경 그리기 ───────────────────────────────────────────
+function drawBackground() {
+  // 하늘
+  const grd = ctx.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0,   '#04041a');
+  grd.addColorStop(0.5, '#0a0a2e');
+  grd.addColorStop(1,   '#1a1a3e');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  // 성운 안개
+  const halfY = getHalfY();
+  [
+    { cx:0.25, cy:0.15, r:0.50, c:'rgba(80,30,160,0.12)' },
+    { cx:0.75, cy:0.28, r:0.42, c:'rgba(20,60,180,0.10)' },
+    { cx:0.50, cy:0.38, r:0.55, c:'rgba(140,20,90,0.08)' },
+  ].forEach(n => {
+    const ng = ctx.createRadialGradient(n.cx*W, n.cy*halfY, 0, n.cx*W, n.cy*halfY, n.r*W);
+    ng.addColorStop(0, n.c);
+    ng.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = ng;
+    ctx.fillRect(0, 0, W, halfY);
+  });
+
+  // 5각별 그리기
+  STARS.forEach(s => {
+    const sx  = s.x * W;
+    const sy  = s.y * H;
+    const rot = s.rot + elapsed * s.rotSpeed;
+    const t   = 0.3 + 0.7 * Math.abs(Math.sin(elapsed * s.twinkleSpeed + s.twinkleOffset));
+
+    ctx.save();
+    ctx.globalAlpha = t;
+    ctx.shadowColor = s.glow;
+    ctx.shadowBlur  = s.r * 4;
+    drawStarPath(sx, sy, s.r, s.r * 0.4, rot - Math.PI/2);
+    ctx.fillStyle = s.fill;
+    ctx.fill();
+    ctx.restore();
+  });
+
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur  = 0;
+}
+
+// ── 절반선 ────────────────────────────────────────────────
+function drawHalfLine() {
+  const halfY = getHalfY();
+
+  ctx.globalAlpha = 0.06;
+  ctx.fillStyle = '#ff3333';
+  ctx.fillRect(0, 0, W, halfY);
+  ctx.globalAlpha = 1;
+
+  ctx.setLineDash([14, 8]);
+  ctx.strokeStyle = 'rgba(255,80,80,0.55)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, halfY); ctx.lineTo(W, halfY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.font = `bold ${Math.min(13, H*0.018)}px ${CONFIG.FONT_FAMILY}`;
+  ctx.fillStyle = 'rgba(255,110,110,0.75)';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('⚡ 여기 넘으면 자동 터짐!', W - 12, halfY - 13);
+}
+
+// ── 풍선 ──────────────────────────────────────────────────
 const balloons = [];
 
 function initBalloons() {
   balloons.length = 0;
   for (let i = 0; i < CONFIG.BALLOON_COUNT; i++) {
     const b = new Balloon(W, H);
-    // 처음엔 화면 전체에 고르게 분산 배치
-    b.y      = H * 0.1 + Math.random() * H * 0.95;
-    b.baseX  = b.rx * 2 + Math.random() * (W - b.rx * 4);
-    b.x      = b.baseX;
-    // 속도도 조금씩 다르게 (이미 reset에서 설정되지만 재배치)
+    b.y = H * 0.1 + Math.random() * H * 0.95;
+    b.baseX = b.rx * 2 + Math.random() * (W - b.rx * 4);
+    b.x = b.baseX;
     b.wobbleOffset = (i / CONFIG.BALLOON_COUNT) * Math.PI * 2;
     balloons.push(b);
   }
 }
 
-// 풍선 하나 제거 후 새 풍선을 바닥에서 스폰 (딜레이 적용)
 function respawnBalloon(b) {
-  b.reset(); // 바닥에서 새로 시작
-  // x 위치를 기존 풍선들과 너무 겹치지 않게
+  b.reset();
   let tries = 0;
   while (tries++ < 10) {
     const nx = b.rx * 2 + Math.random() * (W - b.rx * 4);
@@ -81,34 +210,44 @@ function respawnBalloon(b) {
   }
 }
 
+// ── 터치 ──────────────────────────────────────────────────
+function onTap(x, y) {
+  for (let i = balloons.length - 1; i >= 0; i--) {
+    const b = balloons[i];
+    if (!b.alive) continue;
+    if (b.hitTest(x, y)) {
+      b.alive = false;
+      respawnBalloon(b);
+      break;
+    }
+  }
+}
+
 // ── 게임 루프 ─────────────────────────────────────────────
 let lastTime = 0;
-let elapsed  = 0; // 경과 시간 (초) — 흔들림 애니메이션용
+let elapsed  = 0;
 
 function loop(timestamp) {
-  const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // 초 단위, 최대 50ms
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
   lastTime = timestamp;
   elapsed += dt;
 
-  // 배경
   drawBackground();
+  drawHalfLine();
 
-  // 풍선 업데이트 & 그리기
   balloons.forEach(b => {
     b.update(dt, elapsed);
-
-    // 화면 위로 벗어나면 하단에서 재생성
-    if (b.isOutOfScreen()) {
-      respawnBalloon(b);
-    }
-
+    if (b.isPastHalf(H, CONFIG.HUD_HEIGHT)) { respawnBalloon(b); return; }
+    if (b.isOutOfScreen())                  { respawnBalloon(b); return; }
     b.draw(ctx);
   });
 
   requestAnimationFrame(loop);
 }
 
-// ── 시작 ─────────────────────────────────────────────────
+// ── 시작 ──────────────────────────────────────────────────
 resizeCanvas();
+initStars();
 initBalloons();
+new InputHandler(canvas, onTap);
 requestAnimationFrame(loop);

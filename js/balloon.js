@@ -41,6 +41,14 @@ class Balloon {
     return this.y - this.ry < halfY;
   }
 
+  // 터치 히트판정 — 타원 + 20% 마진
+  hitTest(px, py) {
+    const m  = CONFIG.BALLOON_HIT_MARGIN;
+    const dx = (px - this.x) / (this.rx * m);
+    const dy = (py - this.y) / (this.ry * m);
+    return dx * dx + dy * dy <= 1;
+  }
+
   // 화면 위로 완전히 벗어났는지
   isOutOfScreen() {
     return this.y + this.ry < 0;
