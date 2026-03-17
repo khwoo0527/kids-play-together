@@ -20,6 +20,9 @@ window.addEventListener('resize', () => {
   balloons.forEach(b => { b.canvasWidth = W; b.canvasHeight = H; });
 });
 
+// ── 게임 매니저 ────────────────────────────────────────────
+const gameManager = new GameManager();
+
 // ── 절반선 Y ──────────────────────────────────────────────
 function getHalfY() {
   return CONFIG.HUD_HEIGHT + (H - CONFIG.HUD_HEIGHT) / 2;
@@ -72,7 +75,6 @@ function initStars() {
   ];
   let ci = 0;
 
-  // 큰 별 12개
   for (let i = 0; i < 12; i++) {
     const r = 10 + Math.random() * 7;
     const pos = place(r);
@@ -85,8 +87,6 @@ function initStars() {
       rot: Math.random() * Math.PI * 2,
     });
   }
-
-  // 중간 별 28개
   for (let i = 0; i < 28; i++) {
     const r = 4 + Math.random() * 5;
     const pos = place(r, 50);
@@ -99,8 +99,6 @@ function initStars() {
       rot: Math.random() * Math.PI * 2,
     });
   }
-
-  // 작은 별 35개
   for (let i = 0; i < 35; i++) {
     const r = 1.8 + Math.random() * 2.5;
     const pos = place(r, 30);
@@ -117,7 +115,6 @@ function initStars() {
 
 // ── 배경 그리기 ───────────────────────────────────────────
 function drawBackground() {
-  // 하늘
   const grd = ctx.createLinearGradient(0, 0, 0, H);
   grd.addColorStop(0,   '#04041a');
   grd.addColorStop(0.5, '#0a0a2e');
@@ -125,7 +122,6 @@ function drawBackground() {
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, W, H);
 
-  // 성운 안개
   const halfY = getHalfY();
   [
     { cx:0.25, cy:0.15, r:0.50, c:'rgba(80,30,160,0.12)' },
@@ -139,7 +135,6 @@ function drawBackground() {
     ctx.fillRect(0, 0, W, halfY);
   });
 
-  // 5각별 그리기
   STARS.forEach(s => {
     const sx  = s.x * W;
     const sy  = s.y * H;
@@ -183,6 +178,30 @@ function drawHalfLine() {
   ctx.fillText('⚡ 여기 넘으면 자동 터짐!', W - 12, halfY - 13);
 }
 
+// ── 카운트다운 그리기 ─────────────────────────────────────
+function drawCountdown() {
+  const val  = gameManager.cdVal;
+  const frac = gameManager.cdFrac; // 1.0 → 0.0
+
+  ctx.fillStyle = 'rgba(0,0,0,0.38)';
+  ctx.fillRect(0, 0, W, H);
+
+  const scale = 1.0 + (1.0 - frac) * 0.55;
+  const alpha = Math.min(1, frac * 2.5);
+  const size  = Math.min(W, H) * 0.28 * scale;
+
+  ctx.save();
+  ctx.globalAlpha  = alpha;
+  ctx.font         = `900 ${size}px ${CONFIG.FONT_FAMILY}`;
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor  = '#ff9f1c';
+  ctx.shadowBlur   = 60;
+  ctx.fillStyle    = '#ffffff';
+  ctx.fillText(val.toString(), W / 2, H / 2);
+  ctx.restore();
+}
+
 // ── 풍선 ──────────────────────────────────────────────────
 const balloons = [];
 
@@ -190,7 +209,7 @@ function initBalloons() {
   balloons.length = 0;
   for (let i = 0; i < CONFIG.BALLOON_COUNT; i++) {
     const b = new Balloon(W, H);
-    b.y = H * 0.1 + Math.random() * H * 0.95;
+    b.y = H + b.ry * 2;
     b.baseX = b.rx * 2 + Math.random() * (W - b.rx * 4);
     b.x = b.baseX;
     b.wobbleOffset = (i / CONFIG.BALLOON_COUNT) * Math.PI * 2;
@@ -214,10 +233,9 @@ function respawnBalloon(b) {
 const scoreManager = new ScoreManager();
 const hud          = new HUD();
 
-let timeTotal = CONFIG.DEFAULT_TIME; // 선택한 총 시간 (0=무제한)
-let timeLeft  = timeTotal || null;   // null=무제한
+let timeTotal = CONFIG.DEFAULT_TIME;
+let timeLeft  = null;
 
-// +점수 팝업 목록
 const scorePopups = [];
 
 function addScorePopup(x, y, text) {
@@ -250,7 +268,9 @@ function drawScorePopups() {
 
 // ── 터치 ──────────────────────────────────────────────────
 function onTap(x, y) {
-  sound.init(); // 첫 터치 시 AudioContext 활성화
+  sound.init();
+  if (!gameManager.isPlaying) return;
+
   for (let i = balloons.length - 1; i >= 0; i--) {
     const b = balloons[i];
     if (!b.alive) continue;
@@ -266,45 +286,42 @@ function onTap(x, y) {
   }
 }
 
-// ── 게임 루프 ─────────────────────────────────────────────
-let lastTime = 0;
-let elapsed  = 0;
+// ── 게임 시작 / 종료 콜백 ─────────────────────────────────
+gameManager.onPlay(() => {
+  scoreManager.reset();
+  scorePopups.length = 0;
+  timeTotal = gameManager.selectedTime;
+  timeLeft  = timeTotal || null;
+  initBalloons();
+});
 
-function loop(timestamp) {
-  const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
-  lastTime = timestamp;
-  elapsed += dt;
+gameManager.onResult(() => {
+  document.getElementById('r-score').textContent = scoreManager.score;
+  document.getElementById('r-combo').textContent = scoreManager.maxCombo;
+  document.getElementById('r-acc').textContent   = scoreManager.accuracy + '%';
+  document.getElementById('screen-result').classList.remove('hidden');
+});
 
-  // 타이머 감소
-  if (timeLeft !== null) {
-    timeLeft = Math.max(0, timeLeft - dt);
-  }
-
-  drawBackground();
-  drawHalfLine();
-
-  balloons.forEach(b => {
-    b.update(dt, elapsed);
-    if (b.isPastHalf(H, CONFIG.HUD_HEIGHT)) {
-      scoreManager.miss();
-      respawnBalloon(b);
-      return;
-    }
-    if (b.isOutOfScreen()) { respawnBalloon(b); return; }
-    b.draw(ctx);
+// ── 시작/결과 화면 버튼 ───────────────────────────────────
+document.querySelectorAll('.time-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    gameManager.selectedTime = Number(btn.dataset.time);
   });
+});
 
-  // 팝업 & 콤보 텍스트
-  updateScorePopups(dt);
-  drawScorePopups();
-  scoreManager.updateComboText(dt);
-  scoreManager.drawComboText(ctx);
+document.getElementById('btn-start').addEventListener('click', () => {
+  sound.init();
+  document.getElementById('screen-ready').classList.add('hidden');
+  gameManager.startCountdown();
+});
 
-  // HUD (맨 위에)
-  hud.draw(ctx, W, H, scoreManager, timeLeft, timeTotal || 1);
-
-  requestAnimationFrame(loop);
-}
+document.getElementById('btn-restart').addEventListener('click', () => {
+  document.getElementById('screen-result').classList.add('hidden');
+  gameManager.restart();
+  document.getElementById('screen-ready').classList.remove('hidden');
+});
 
 // ── BGM 토글 버튼 ─────────────────────────────────────────
 const bgmBtn = document.getElementById('bgmToggle');
@@ -314,6 +331,56 @@ bgmBtn.addEventListener('click', () => {
   bgmBtn.textContent = on ? '🎵' : '🔇';
   bgmBtn.classList.toggle('off', !on);
 });
+
+// ── 게임 루프 ─────────────────────────────────────────────
+let lastTime = 0;
+let elapsed  = 0;
+
+function loop(timestamp) {
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+  lastTime = timestamp;
+  elapsed += dt;
+
+  gameManager.update(dt);
+
+  // 타이머 감소
+  if (gameManager.isPlaying && timeLeft !== null) {
+    timeLeft = Math.max(0, timeLeft - dt);
+    if (timeLeft <= 0) gameManager.endGame();
+  }
+
+  drawBackground();
+
+  if (gameManager.isPlaying || gameManager.isCd) {
+    drawHalfLine();
+
+    // 풍선 업데이트
+    balloons.forEach(b => {
+      b.update(dt, elapsed);
+      if (gameManager.isPlaying) {
+        if (b.isPastHalf(H, CONFIG.HUD_HEIGHT)) { scoreManager.miss(); respawnBalloon(b); return; }
+        if (b.isOutOfScreen()) { respawnBalloon(b); return; }
+      }
+    });
+
+    // 풍선 그리기
+    balloons.forEach(b => {
+      if (b.alive && !b.isPastHalf(H, CONFIG.HUD_HEIGHT) && !b.isOutOfScreen()) b.draw(ctx);
+    });
+
+    if (gameManager.isPlaying) {
+      updateScorePopups(dt);
+      drawScorePopups();
+      scoreManager.updateComboText(dt);
+      scoreManager.drawComboText(ctx);
+      hud.draw(ctx, W, H, scoreManager, timeLeft, timeTotal || 1);
+    }
+
+    if (gameManager.isCd) drawCountdown();
+  }
+
+  requestAnimationFrame(loop);
+}
 
 // ── 시작 ──────────────────────────────────────────────────
 resizeCanvas();

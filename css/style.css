@@ -9,7 +9,6 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: #0a0a1a;
-  /* 터치 시 길게 누르기 메뉴, 텍스트 선택 방지 */
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -43,3 +42,126 @@ html, body {
 #bgmToggle:hover  { background: rgba(255,255,255,0.2); }
 #bgmToggle:active { transform: scale(0.9); }
 #bgmToggle.off    { opacity: 0.45; }
+
+/* ── 오버레이 화면 공통 ── */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 4, 26, 0.82);
+  backdrop-filter: blur(8px);
+}
+.screen.hidden { display: none; }
+
+.screen-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 44px 52px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  border-radius: 28px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+  max-width: 460px;
+  width: 90vw;
+}
+
+/* 제목 */
+.game-title {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 24px #ff9de2, 0 0 48px #ff44bb;
+  text-align: center;
+  letter-spacing: -0.5px;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+
+/* 시간 선택 */
+.time-label {
+  font-size: 15px;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  margin-bottom: 10px;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+.time-btns {
+  display: flex;
+  gap: 12px;
+}
+.time-btn {
+  padding: 10px 22px;
+  border-radius: 50px;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+.time-btn:hover  { background: rgba(255,255,255,0.18); color: #fff; }
+.time-btn.active {
+  background: linear-gradient(135deg, #ff6b6b, #ff9f1c);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(255,100,50,0.45);
+}
+
+/* 메인 버튼 */
+.btn-main {
+  padding: 16px 48px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #6bcb77, #4d96ff);
+  color: #fff;
+  font-size: clamp(18px, 4vw, 26px);
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 28px rgba(77,150,255,0.45);
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  letter-spacing: 0.5px;
+}
+.btn-main:hover  { transform: scale(1.04); box-shadow: 0 8px 36px rgba(77,150,255,0.6); }
+.btn-main:active { transform: scale(0.96); }
+
+/* 결과 화면 */
+.result-emoji {
+  font-size: clamp(48px, 10vw, 72px);
+  line-height: 1;
+}
+.result-title {
+  font-size: clamp(24px, 5vw, 38px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 20px #ffd700;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+.result-stats {
+  display: flex;
+  gap: 28px;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.stat-val {
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 14px rgba(255,215,0,0.6);
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+.stat-label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
