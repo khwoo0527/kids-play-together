@@ -12,12 +12,25 @@ function resizeCanvas() {
   canvas.style.width  = W + 'px';
   canvas.style.height = H + 'px';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  // HUD 높이 화면 크기에 따라 동적 조정
+  CONFIG.HUD_HEIGHT = W < 480 ? 80 : W < 768 ? 95 : 110;
+
+  // CSS 변수로 버튼 위치 동기화
+  const root = document.documentElement;
+  root.style.setProperty('--hud-h', CONFIG.HUD_HEIGHT + 'px');
+  // 모바일 실제 뷰포트 높이 (주소창 제외)
+  root.style.setProperty('--real-h', H + 'px');
 }
 
+let _resizeTimer;
 window.addEventListener('resize', () => {
-  resizeCanvas();
-  initStars();
-  balloons.forEach(b => { b.canvasWidth = W; b.canvasHeight = H; });
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    resizeCanvas();
+    initStars();
+    balloons.forEach(b => { b.canvasWidth = W; b.canvasHeight = H; });
+  }, 150);
 });
 
 // ── 게임 매니저 ────────────────────────────────────────────

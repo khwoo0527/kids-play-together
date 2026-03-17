@@ -1,3 +1,8 @@
+:root {
+  --hud-h: 110px;
+  --real-h: 100vh;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,12 +11,13 @@
 
 html, body {
   width: 100%;
-  height: 100%;
+  height: var(--real-h);
   overflow: hidden;
   background: #0a0a1a;
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 
 #gameCanvas {
@@ -19,9 +25,10 @@ html, body {
   touch-action: none;
 }
 
+/* BGM / 끝내기 — HUD 높이 기준으로 자동 위치 */
 #bgmToggle {
   position: fixed;
-  top: 120px;
+  top: calc(var(--hud-h) + 10px);
   right: 108px;
   z-index: 300;
   width: 44px;
@@ -38,6 +45,7 @@ html, body {
   transition: background 0.2s, transform 0.1s;
   -webkit-user-select: none;
   user-select: none;
+  touch-action: manipulation;
 }
 #bgmToggle:hover  { background: rgba(255,255,255,0.2); }
 #bgmToggle:active { transform: scale(0.9); }
@@ -45,7 +53,7 @@ html, body {
 
 #btnEnd {
   position: fixed;
-  top: 120px;
+  top: calc(var(--hud-h) + 10px);
   right: 16px;
   z-index: 300;
   padding: 8px 18px;
@@ -59,6 +67,7 @@ html, body {
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
   font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  touch-action: manipulation;
 }
 #btnEnd:hover  { background: rgba(255,80,80,0.4); color: #fff; }
 #btnEnd:active { transform: scale(0.93); }
@@ -315,4 +324,72 @@ html, body {
   font-size: clamp(14px, 2vh, 18px);
   padding: 8px 0;
   font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+
+/* ── 모든 버튼 더블탭 줌 방지 ── */
+button { touch-action: manipulation; }
+
+/* ── 태블릿 (768px 이하) ── */
+@media (max-width: 768px) {
+  .screen-card {
+    padding: 36px 28px;
+    gap: 20px;
+    width: 98vw;
+  }
+  .avatar-btn {
+    width: 62px;
+    height: 62px;
+    font-size: 28px;
+  }
+  .time-btn {
+    padding: 11px 18px;
+    font-size: 17px;
+  }
+}
+
+/* ── 폰 (480px 이하) ── */
+@media (max-width: 480px) {
+  .screen-card {
+    padding: 24px 16px;
+    gap: 16px;
+    border-radius: 24px;
+  }
+  .game-title {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+  .avatar-btns {
+    gap: 8px;
+  }
+  .avatar-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 24px;
+  }
+  .time-btns {
+    gap: 8px;
+  }
+  .time-btn {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  .btn-main {
+    padding: 14px 36px;
+    font-size: clamp(17px, 5vw, 22px);
+  }
+  .result-stats {
+    gap: 16px;
+  }
+  .ranking-list li {
+    gap: 8px;
+  }
+  #bgmToggle {
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
+    right: 90px;
+  }
+  #btnEnd {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
 }
