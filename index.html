@@ -43,14 +43,47 @@
       <div class="input-group">
         <p class="time-label">시간 선택</p>
         <div class="time-btns">
-          <button class="time-btn" data-time="15">15초</button>
+          <button class="time-btn active" data-time="15">15초</button>
           <button class="time-btn" data-time="30">30초</button>
           <button class="time-btn" data-time="45">45초</button>
-          <button class="time-btn active" data-time="60">60초</button>
+          <button class="time-btn" data-time="60">60초</button>
         </div>
       </div>
 
-      <button id="btn-start" class="btn-main">시작! 🎈</button>
+
+      <div class="start-bottom-row">
+        <button id="btn-options" class="btn-option">⚙️ 옵션</button>
+        <button id="btn-start" class="btn-main">시작! 🎈</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 옵션 모달 -->
+  <div id="screen-options" class="screen hidden">
+    <div class="screen-card options-card">
+      <div class="options-title">⚙️ 옵션</div>
+
+      <div class="input-group">
+        <p class="time-label">풍선 수</p>
+        <div class="time-btns opt-btns" id="optBalloonBtns">
+          <button class="time-btn" data-count="5">5개</button>
+          <button class="time-btn" data-count="10">10개</button>
+          <button class="time-btn active" data-count="15">15개</button>
+          <button class="time-btn" data-count="20">20개</button>
+          <button class="time-btn" data-count="25">25개</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <p class="time-label">풍선 속도</p>
+        <div class="time-btns opt-btns" id="optSpeedBtns">
+          <button class="time-btn" data-speed="slow">🐢 느리게</button>
+          <button class="time-btn active" data-speed="normal">😊 보통</button>
+          <button class="time-btn" data-speed="fast">🚀 빠르게</button>
+        </div>
+      </div>
+
+      <button id="btn-options-close" class="btn-main">확인 ✅</button>
     </div>
   </div>
 
@@ -75,9 +108,12 @@
         </div>
       </div>
 
-      <!-- 랭킹 TOP 5 -->
+      <!-- 랭킹 TOP 20 -->
       <div class="ranking-box">
-        <div class="ranking-title">🏆 TOP 5</div>
+        <div class="ranking-header">
+          <div class="ranking-title">🏆 TOP 20</div>
+          <button id="btn-ranking-clear" class="btn-ranking-clear">🗑️ 초기화</button>
+        </div>
         <ol id="ranking-list" class="ranking-list"></ol>
       </div>
 

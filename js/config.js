@@ -12,7 +12,7 @@ const CONFIG = {
 
   // 게임
   COUNTDOWN: 3,
-  DEFAULT_TIME: 60,       // 초 (0 = 무제한)
+  DEFAULT_TIME: 15,       // 초 (0 = 무제한)
   TIME_OPTIONS: [30, 60, 0],
 
   // 점수

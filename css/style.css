@@ -134,6 +134,7 @@ html, body {
   cursor: pointer;
   transition: all 0.18s;
   font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  white-space: nowrap;
 }
 .time-btn:hover  { background: rgba(255,255,255,0.18); color: #fff; }
 .time-btn.active {
@@ -275,14 +276,31 @@ html, body {
   border-radius: 16px;
   padding: clamp(12px, 2vh, 20px) clamp(16px, 2vw, 28px);
 }
+.ranking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(8px, 1.2vh, 14px);
+}
 .ranking-title {
   font-size: clamp(16px, 2.5vh, 24px);
   font-weight: 700;
   color: #ffd700;
-  text-align: center;
-  margin-bottom: clamp(8px, 1.2vh, 14px);
   font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
 }
+.btn-ranking-clear {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,80,80,0.15);
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  transition: background 0.18s;
+  touch-action: manipulation;
+}
+.btn-ranking-clear:hover { background: rgba(255,80,80,0.35); color: #fff; }
 .ranking-list {
   list-style: none;
   padding: 0;
@@ -290,7 +308,14 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: clamp(6px, 1vh, 10px);
+  max-height: 28vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
 }
+.ranking-list::-webkit-scrollbar { width: 5px; }
+.ranking-list::-webkit-scrollbar-track { background: transparent; }
+.ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 .ranking-list li {
   display: flex;
   align-items: center;
@@ -323,6 +348,47 @@ html, body {
   color: rgba(255,255,255,0.3);
   font-size: clamp(14px, 2vh, 18px);
   padding: 8px 0;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+}
+
+/* 시작 버튼 행 */
+.start-bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* 옵션 버튼 */
+.btn-option {
+  padding: clamp(12px, 2vh, 18px) clamp(20px, 3vw, 32px);
+  border-radius: 50px;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.75);
+  font-size: clamp(16px, 2.8vh, 22px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  touch-action: manipulation;
+}
+.btn-option:hover  { background: rgba(255,255,255,0.18); color: #fff; }
+.btn-option:active { transform: scale(0.95); }
+
+/* 옵션 카드 */
+.options-card {
+  max-width: 680px;
+  gap: clamp(20px, 3vh, 32px);
+}
+.opt-btns {
+  flex-wrap: nowrap;
+}
+.options-title {
+  font-size: clamp(28px, 5vh, 44px);
+  font-weight: 900;
+  color: #fff;
   font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
 }
 

@@ -295,9 +295,13 @@ function onTap(x, y) {
       sound.pop(result.combo);
       if (result.combo >= 3) sound.combo(result.combo);
       respawnBalloon(b);
-      break;
+      return;
     }
   }
+
+  // 헛손질 — 콤보 리셋
+  scoreManager.combo = 1;
+  scoreManager._lastPopTime = 0;
 }
 
 // ── 게임 시작 / 종료 콜백 ─────────────────────────────────
@@ -328,7 +332,7 @@ gameManager.onResult(() => {
   rankingManager.save(score, maxCombo, accuracy, timeMode, playerName, playerAvatar);
 
   // 랭킹 렌더링
-  const top  = rankingManager.getTop(5);
+  const top  = rankingManager.getTop(20);
   const list = document.getElementById('ranking-list');
   if (top.length === 0) {
     list.innerHTML = '<div class="rank-empty">아직 기록이 없어요!</div>';
@@ -350,6 +354,13 @@ gameManager.onResult(() => {
   document.getElementById('screen-result').classList.remove('hidden');
 });
 
+// ── 랭킹 초기화 버튼 ──────────────────────────────────────
+document.getElementById('btn-ranking-clear').addEventListener('click', () => {
+  if (!confirm('랭킹 기록을 모두 삭제할까요?')) return;
+  rankingManager.clear();
+  document.getElementById('ranking-list').innerHTML = '<div class="rank-empty">아직 기록이 없어요!</div>';
+});
+
 // ── 플레이어 정보 ─────────────────────────────────────────
 let playerName   = '';
 let playerAvatar = '🐶';
@@ -363,11 +374,45 @@ document.getElementById('avatarBtns').addEventListener('click', e => {
 });
 
 // ── 시작/결과 화면 버튼 ───────────────────────────────────
-document.querySelectorAll('.time-btn').forEach(btn => {
+// 시간 선택
+document.querySelectorAll('.time-btn[data-time]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    btn.closest('.time-btns').querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     gameManager.selectedTime = Number(btn.dataset.time);
+  });
+});
+
+// ── 옵션 모달 ─────────────────────────────────────────────
+const SPEED_PRESETS = {
+  slow:   { min: 40,  max: 75  },
+  normal: { min: 60,  max: 130 },
+  fast:   { min: 110, max: 210 },
+};
+
+document.getElementById('btn-options').addEventListener('click', () => {
+  document.getElementById('screen-options').classList.remove('hidden');
+});
+
+document.getElementById('btn-options-close').addEventListener('click', () => {
+  document.getElementById('screen-options').classList.add('hidden');
+});
+
+document.querySelectorAll('#optBalloonBtns .time-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#optBalloonBtns .time-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    CONFIG.BALLOON_COUNT = Number(btn.dataset.count);
+  });
+});
+
+document.querySelectorAll('#optSpeedBtns .time-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#optSpeedBtns .time-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const p = SPEED_PRESETS[btn.dataset.speed];
+    CONFIG.BALLOON_SPEED_MIN = p.min;
+    CONFIG.BALLOON_SPEED_MAX = p.max;
   });
 });
 
@@ -413,6 +458,13 @@ function loop(timestamp) {
   if (gameManager.isPlaying && timeLeft !== null) {
     timeLeft = Math.max(0, timeLeft - dt);
     if (timeLeft <= 0) gameManager.endGame();
+  }
+
+  // 콤보 자동 리셋 — 마지막 팝 이후 COMBO_WINDOW 지나면 초기화
+  if (gameManager.isPlaying && scoreManager.combo > 1) {
+    if (performance.now() - scoreManager._lastPopTime > CONFIG.COMBO_WINDOW) {
+      scoreManager.combo = 1;
+    }
   }
 
   drawBackground();

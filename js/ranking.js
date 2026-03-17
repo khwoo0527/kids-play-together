@@ -1,6 +1,6 @@
 // ── 랭킹 매니저 (localStorage) ───────────────────────────
 const RANKING_KEY = 'balloonPop_ranking';
-const RANKING_MAX = 10;
+const RANKING_MAX = 20;
 
 const rankingManager = {
   load() {
