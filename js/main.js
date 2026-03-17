@@ -210,6 +210,44 @@ function respawnBalloon(b) {
   }
 }
 
+// ── 점수 / HUD ────────────────────────────────────────────
+const scoreManager = new ScoreManager();
+const hud          = new HUD();
+
+let timeTotal = CONFIG.DEFAULT_TIME; // 선택한 총 시간 (0=무제한)
+let timeLeft  = timeTotal || null;   // null=무제한
+
+// +점수 팝업 목록
+const scorePopups = [];
+
+function addScorePopup(x, y, text) {
+  scorePopups.push({ x, y, text, alpha: 1, vy: -80 });
+}
+
+function updateScorePopups(dt) {
+  for (let i = scorePopups.length - 1; i >= 0; i--) {
+    const p = scorePopups[i];
+    p.y     += p.vy * dt;
+    p.alpha -= dt * 2.2;
+    if (p.alpha <= 0) scorePopups.splice(i, 1);
+  }
+}
+
+function drawScorePopups() {
+  scorePopups.forEach(p => {
+    ctx.save();
+    ctx.globalAlpha  = p.alpha;
+    ctx.font         = `bold ${Math.min(30, H*0.04)}px ${CONFIG.FONT_FAMILY}`;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor  = '#ffaa00';
+    ctx.shadowBlur   = 10;
+    ctx.fillStyle    = '#ffffff';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.restore();
+  });
+}
+
 // ── 터치 ──────────────────────────────────────────────────
 function onTap(x, y) {
   for (let i = balloons.length - 1; i >= 0; i--) {
@@ -217,6 +255,8 @@ function onTap(x, y) {
     if (!b.alive) continue;
     if (b.hitTest(x, y)) {
       b.alive = false;
+      const result = scoreManager.pop(x, y, performance.now());
+      addScorePopup(x, y - b.ry - 10, `+${result.gained}`);
       respawnBalloon(b);
       break;
     }
@@ -232,15 +272,33 @@ function loop(timestamp) {
   lastTime = timestamp;
   elapsed += dt;
 
+  // 타이머 감소
+  if (timeLeft !== null) {
+    timeLeft = Math.max(0, timeLeft - dt);
+  }
+
   drawBackground();
   drawHalfLine();
 
   balloons.forEach(b => {
     b.update(dt, elapsed);
-    if (b.isPastHalf(H, CONFIG.HUD_HEIGHT)) { respawnBalloon(b); return; }
-    if (b.isOutOfScreen())                  { respawnBalloon(b); return; }
+    if (b.isPastHalf(H, CONFIG.HUD_HEIGHT)) {
+      scoreManager.miss();
+      respawnBalloon(b);
+      return;
+    }
+    if (b.isOutOfScreen()) { respawnBalloon(b); return; }
     b.draw(ctx);
   });
+
+  // 팝업 & 콤보 텍스트
+  updateScorePopups(dt);
+  drawScorePopups();
+  scoreManager.updateComboText(dt);
+  scoreManager.drawComboText(ctx);
+
+  // HUD (맨 위에)
+  hud.draw(ctx, W, H, scoreManager, timeLeft, timeTotal || 1);
 
   requestAnimationFrame(loop);
 }
