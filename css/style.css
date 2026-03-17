@@ -17,6 +17,29 @@ html, body {
 
 #gameCanvas {
   display: block;
-  /* CSS 크기는 JS에서 window 크기로 맞춤 */
-  touch-action: none; /* 브라우저 기본 스크롤/줌 제스처 차단 */
+  touch-action: none;
 }
+
+#bgmToggle {
+  position: fixed;
+  top: 82px;
+  right: 16px;
+  z-index: 100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.35);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#bgmToggle:hover  { background: rgba(255,255,255,0.2); }
+#bgmToggle:active { transform: scale(0.9); }
+#bgmToggle.off    { opacity: 0.45; }

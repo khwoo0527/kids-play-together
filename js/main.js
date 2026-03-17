@@ -250,6 +250,7 @@ function drawScorePopups() {
 
 // ── 터치 ──────────────────────────────────────────────────
 function onTap(x, y) {
+  sound.init(); // 첫 터치 시 AudioContext 활성화
   for (let i = balloons.length - 1; i >= 0; i--) {
     const b = balloons[i];
     if (!b.alive) continue;
@@ -257,6 +258,8 @@ function onTap(x, y) {
       b.alive = false;
       const result = scoreManager.pop(x, y, performance.now());
       addScorePopup(x, y - b.ry - 10, `+${result.gained}`);
+      sound.pop(result.combo);
+      if (result.combo >= 3) sound.combo(result.combo);
       respawnBalloon(b);
       break;
     }
@@ -302,6 +305,15 @@ function loop(timestamp) {
 
   requestAnimationFrame(loop);
 }
+
+// ── BGM 토글 버튼 ─────────────────────────────────────────
+const bgmBtn = document.getElementById('bgmToggle');
+bgmBtn.addEventListener('click', () => {
+  sound.init();
+  const on = sound.toggleBGM();
+  bgmBtn.textContent = on ? '🎵' : '🔇';
+  bgmBtn.classList.toggle('off', !on);
+});
 
 // ── 시작 ──────────────────────────────────────────────────
 resizeCanvas();
