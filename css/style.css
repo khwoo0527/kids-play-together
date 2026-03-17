@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0a1a;
+  /* 터치 시 길게 누르기 메뉴, 텍스트 선택 방지 */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#gameCanvas {
+  display: block;
+  /* CSS 크기는 JS에서 window 크기로 맞춤 */
+  touch-action: none; /* 브라우저 기본 스크롤/줌 제스처 차단 */
+}
