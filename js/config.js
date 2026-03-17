@@ -1,6 +1,6 @@
 const CONFIG = {
   // 풍선
-  BALLOON_COUNT: 10,
+  BALLOON_COUNT: 18,
   BALLOON_COLORS: ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9f1c','#ff85a1','#00d4aa'],
   BALLOON_RADIUS_MIN: 28,
   BALLOON_RADIUS_MAX: 48,

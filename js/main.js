@@ -57,9 +57,27 @@ function initBalloons() {
   balloons.length = 0;
   for (let i = 0; i < CONFIG.BALLOON_COUNT; i++) {
     const b = new Balloon(W, H);
-    // 처음엔 화면 곳곳에 배치 (바닥 아닌 랜덤 y)
-    b.y = H * 0.3 + Math.random() * H * 0.7;
+    // 처음엔 화면 전체에 고르게 분산 배치
+    b.y      = H * 0.1 + Math.random() * H * 0.95;
+    b.baseX  = b.rx * 2 + Math.random() * (W - b.rx * 4);
+    b.x      = b.baseX;
+    // 속도도 조금씩 다르게 (이미 reset에서 설정되지만 재배치)
+    b.wobbleOffset = (i / CONFIG.BALLOON_COUNT) * Math.PI * 2;
     balloons.push(b);
+  }
+}
+
+// 풍선 하나 제거 후 새 풍선을 바닥에서 스폰 (딜레이 적용)
+function respawnBalloon(b) {
+  b.reset(); // 바닥에서 새로 시작
+  // x 위치를 기존 풍선들과 너무 겹치지 않게
+  let tries = 0;
+  while (tries++ < 10) {
+    const nx = b.rx * 2 + Math.random() * (W - b.rx * 4);
+    const tooClose = balloons.some(other =>
+      other !== b && Math.abs(other.x - nx) < b.rx * 2.5 && other.y > H * 0.8
+    );
+    if (!tooClose) { b.baseX = nx; b.x = nx; break; }
   }
 }
 
@@ -81,7 +99,7 @@ function loop(timestamp) {
 
     // 화면 위로 벗어나면 하단에서 재생성
     if (b.isOutOfScreen()) {
-      b.reset();
+      respawnBalloon(b);
     }
 
     b.draw(ctx);
